@@ -1,0 +1,21 @@
+{
+  "id": "test-fighter-1",
+  "schemaVersion": 1,
+  "ruleset": "2024",
+  "name": "Test Fighter",
+  "species": "srd52:dwarf",
+  "background": "srd52:soldier",
+  "classes": [{ "id": "srd52:fighter", "subclass": null, "level": 3 }],
+  "abilityScores": { "str": 15, "dex": 12, "con": 14, "int": 8, "wis": 10, "cha": 10 },
+  "originBonuses": { "str": 2, "con": 1 },
+  "skills": ["athletics", "perception"],
+  "expertise": [],
+  "feats": [],
+  "equipment": [
+    { "id": "srd52:chain-mail", "equipped": true },
+    { "id": "srd52:shield", "equipped": true }
+  ],
+  "spells": { "known": [], "prepared": [] },
+  "customContent": {},
+  "state": { "currentHp": null, "tempHp": 0, "spellSlotsUsed": {} }
+}

@@ -1,0 +1,47 @@
+{
+  "species": {
+    "srd52:dwarf": {
+      "name": "Dwarf",
+      "size": "Medium",
+      "speed": 30,
+      "traits": [],
+      "effects": [{ "type": "hpPerLevel", "value": 1 }]
+    }
+  },
+  "backgrounds": {
+    "srd52:soldier": {
+      "name": "Soldier",
+      "abilityOptions": ["str", "dex", "con"],
+      "skills": ["athletics", "intimidation"],
+      "originFeat": "srd52:savage-attacker"
+    }
+  },
+  "classes": {
+    "srd52:fighter": {
+      "name": "Fighter",
+      "hitDie": 10,
+      "saves": ["str", "con"],
+      "spellcasting": null
+    },
+    "srd52:wizard": {
+      "name": "Wizard",
+      "hitDie": 6,
+      "saves": ["int", "wis"],
+      "spellcasting": {
+        "ability": "int",
+        "slots": { "1": [2], "2": [3], "3": [4, 2] }
+      }
+    }
+  },
+  "armor": {
+    "srd52:leather-armor": { "name": "Leather Armor", "category": "light", "baseAc": 11 },
+    "srd52:scale-mail": { "name": "Scale Mail", "category": "medium", "baseAc": 14 },
+    "srd52:chain-mail": { "name": "Chain Mail", "category": "heavy", "baseAc": 16 },
+    "srd52:shield": { "name": "Shield", "category": "shield", "acBonus": 2 }
+  },
+  "weapons": {},
+  "spells": {},
+  "feats": {
+    "srd52:savage-attacker": { "name": "Savage Attacker", "effects": [] }
+  }
+}

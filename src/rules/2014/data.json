@@ -1,0 +1,52 @@
+{
+  "species": {
+    "srd51:dwarf": {
+      "name": "Dwarf",
+      "size": "Medium",
+      "speed": 25,
+      "abilityBonuses": { "con": 2 },
+      "traits": [],
+      "effects": []
+    },
+    "srd51:hill-dwarf": {
+      "name": "Hill Dwarf",
+      "size": "Medium",
+      "speed": 25,
+      "abilityBonuses": { "con": 2, "wis": 1 },
+      "traits": [],
+      "effects": [{ "type": "hpPerLevel", "value": 1 }]
+    }
+  },
+  "backgrounds": {
+    "srd51:acolyte": {
+      "name": "Acolyte",
+      "skills": ["insight", "religion"]
+    }
+  },
+  "classes": {
+    "srd51:fighter": {
+      "name": "Fighter",
+      "hitDie": 10,
+      "saves": ["str", "con"],
+      "spellcasting": null
+    },
+    "srd51:wizard": {
+      "name": "Wizard",
+      "hitDie": 6,
+      "saves": ["int", "wis"],
+      "spellcasting": {
+        "ability": "int",
+        "slots": { "1": [2], "2": [3], "3": [4, 2] }
+      }
+    }
+  },
+  "armor": {
+    "srd51:leather-armor": { "name": "Leather Armor", "category": "light", "baseAc": 11 },
+    "srd51:scale-mail": { "name": "Scale Mail", "category": "medium", "baseAc": 14 },
+    "srd51:chain-mail": { "name": "Chain Mail", "category": "heavy", "baseAc": 16 },
+    "srd51:shield": { "name": "Shield", "category": "shield", "acBonus": 2 }
+  },
+  "weapons": {},
+  "spells": {},
+  "feats": {}
+}
