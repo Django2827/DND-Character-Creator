@@ -5,7 +5,7 @@ import { exportJson, importCharacter } from '../../io/json'
 import { exportHtml } from '../../io/html'
 
 export default function ReviewStep() {
-  const { character, ruleset, compendium, stats } = useRules()
+  const { character, compendium, stats } = useRules()
   const updateState = useCharacter((s) => s.updateState)
   const setCharacter = useCharacter((s) => s.setCharacter)
 
@@ -22,7 +22,7 @@ export default function ReviewStep() {
 
   async function onExportHtml() {
     try {
-      await exportHtml(character, ruleset, compendium)
+      await exportHtml(character, compendium)
     } catch (err) {
       alert(err.message)
     }
@@ -30,13 +30,15 @@ export default function ReviewStep() {
 
   return (
     <>
-      <Sheet character={character} stats={stats} onStateChange={updateState} />
-
-      <button onClick={() => exportJson(character, ruleset, compendium)}>Export JSON</button>
-      <button onClick={onExportHtml}>Export HTML</button>
-      <label>
-        Import <input type="file" accept=".json,.html" onChange={onImport} />
-      </label>
+      <Sheet character={character} stats={stats} compendium={compendium} onStateChange={updateState} />
+      <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+        <button onClick={() => exportJson(character, compendium)}>Export JSON</button>
+        <button onClick={onExportHtml}>Export interactive HTML</button>
+        <button onClick={() => window.print()}>Print</button>
+        <label>
+          Import (.json or .html): <input type="file" accept=".json,.html" onChange={onImport} />
+        </label>
+      </p>
     </>
   )
 }

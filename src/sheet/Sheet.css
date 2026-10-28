@@ -1,0 +1,527 @@
+/* A paper-style character sheet. No external fonts, so it works offline. */
+
+.sheet {
+  --paper: #f7f0df;
+  --paper-2: #efe4c8;
+  --ink: #2a2118;
+  --ink-soft: #6a5a45;
+  --accent: #8a1c1c;
+  --line: #b9a67c;
+
+  color-scheme: light;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: left;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(60, 40, 10, 0.25);
+}
+
+.sheet *,
+.sheet *::before,
+.sheet *::after {
+  box-sizing: border-box;
+}
+
+.sheet button,
+.sheet select,
+.sheet input[type='number'],
+.sheet input[type='text'] {
+  font: inherit;
+  color: var(--ink);
+  background: #fffaf0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.sheet button {
+  cursor: pointer;
+  padding: 2px 8px;
+}
+.sheet button:hover:not(:disabled) {
+  background: var(--paper-2);
+  border-color: var(--accent);
+}
+.sheet button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.muted {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.pre {
+  white-space: pre-wrap;
+  min-height: 1.4em;
+  margin: 0;
+}
+
+/* ---------- header ---------- */
+.sheet__header {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 2fr;
+  gap: 12px 20px;
+  align-items: end;
+  padding-bottom: 12px;
+  border-bottom: 3px double var(--accent);
+  margin-bottom: 16px;
+}
+.sheet__header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--ink);
+}
+.sheet__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 6px 14px;
+  margin: 0;
+}
+.sheet__meta div {
+  border-bottom: 1px solid var(--ink);
+}
+.sheet__meta dd {
+  margin: 0;
+  min-height: 1.4em;
+}
+.sheet__meta dt {
+  order: 2;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+.sheet__meta div {
+  display: flex;
+  flex-direction: column;
+}
+.sheet__rolls {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ---------- layout ---------- */
+.sheet__cols {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) minmax(280px, 1.25fr) minmax(240px, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.twocol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- boxes ---------- */
+.box {
+  position: relative;
+  padding: 10px 12px 26px;
+  background: #fffaf0;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+}
+.box__title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  margin: 0;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+.box h4 {
+  margin: 14px 0 6px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+  color: var(--accent);
+  font-variant: small-caps;
+}
+.box p {
+  margin: 0 0 6px;
+}
+
+/* ---------- ability scores ---------- */
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.sheet .ability {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px 22px;
+  background: #fffaf0;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+}
+.ability__name {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.ability__mod {
+  font-size: 1.9rem;
+  font-weight: bold;
+  line-height: 1.1;
+}
+.ability__score {
+  position: absolute;
+  bottom: -11px;
+  min-width: 2.6em;
+  padding: 0 6px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+.statrow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+}
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.stat strong {
+  min-width: 2.2em;
+  text-align: center;
+  padding: 1px 6px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+}
+.stat span {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- saves & skills ---------- */
+.proflist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sheet .proflist button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 2px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--paper-2);
+  border-radius: 0;
+}
+.proflist b {
+  min-width: 2.2em;
+  text-align: center;
+  border-bottom: 1px solid var(--ink);
+}
+.proflist small {
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+.dot {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+}
+.dot--on {
+  background: var(--ink);
+}
+.dot--x2 {
+  box-shadow: 0 0 0 2px #fffaf0, 0 0 0 3.5px var(--accent);
+}
+
+/* ---------- vitals ---------- */
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.sheet .vital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  background: #fffaf0;
+  border: 2px solid var(--ink);
+  border-radius: 10px 10px 22px 22px;
+}
+.vital strong {
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+.vital span {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.hp {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hp__now {
+  font-size: 1.2rem;
+}
+.hp__now strong {
+  font-size: 2rem;
+}
+.hp__temp input,
+.hp__controls input {
+  width: 4.5em;
+  padding: 3px 5px;
+}
+.hp__controls {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.hitdie,
+.death {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.pips {
+  display: inline-flex;
+  gap: 4px;
+}
+.pips input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* ---------- attacks, items ---------- */
+.attacks {
+  width: 100%;
+  border-collapse: collapse;
+}
+.attacks th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+.attacks td {
+  padding: 3px 4px 3px 0;
+  border-top: 1px solid var(--paper-2);
+}
+.attacks td button + button {
+  margin-left: 4px;
+}
+.items {
+  margin: 0;
+  padding-left: 18px;
+}
+small {
+  color: var(--ink-soft);
+}
+
+/* ---------- features ---------- */
+.featgroup > summary {
+  font-weight: bold;
+  font-variant: small-caps;
+  color: var(--accent);
+  cursor: pointer;
+}
+.feature {
+  margin: 2px 0 2px 10px;
+}
+.feature > summary {
+  cursor: pointer;
+}
+.feature--option {
+  margin-left: 12px;
+}
+.rich p {
+  margin: 4px 0;
+}
+.rich ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+/* ---------- spellcasting ---------- */
+.spellpanel {
+  margin-top: 16px;
+  padding-bottom: 30px;
+}
+.spellpanel__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin-bottom: 8px;
+}
+.spellpanel__head div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.spellpanel__head strong {
+  font-size: 1.3rem;
+}
+.spellpanel__head small {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.concentration {
+  padding: 4px 8px;
+  background: #f4e1b5;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+}
+.concentration button {
+  margin-left: 8px;
+}
+.slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 4px 20px;
+}
+.slots__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.spells {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 4px 18px;
+}
+.spell {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--paper-2);
+}
+.spell summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.spell__name {
+  font-weight: 600;
+}
+.spell__tags {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+.spell__tags abbr {
+  margin-right: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.spell__meta {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+.spell__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+/* ---------- roll log ---------- */
+.rolllog {
+  position: sticky;
+  bottom: 8px;
+  margin-top: 16px;
+  max-width: 460px;
+  padding: 6px 12px;
+  background: rgba(255, 250, 240, 0.97);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+}
+.rolllog h3 {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.rolllog ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  max-height: 7.5em;
+  overflow-y: auto;
+}
+
+/* ---------- small screens & print ---------- */
+@media (max-width: 920px) {
+  .sheet__cols {
+    grid-template-columns: 1fr;
+  }
+  .sheet__header {
+    grid-template-columns: 1fr;
+  }
+  .abilities {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media print {
+  .sheet {
+    border: 0;
+    box-shadow: none;
+    max-width: none;
+  }
+  .sheet__rolls,
+  .rolllog,
+  .hp__controls,
+  .spell__actions,
+  .hitdie button,
+  .concentration button {
+    display: none !important;
+  }
+}

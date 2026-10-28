@@ -13,7 +13,8 @@
   "feats": [],
   "equipment": [
     { "id": "srd52:chain-mail", "equipped": true },
-    { "id": "srd52:shield", "equipped": true }
+    { "id": "srd52:shield", "equipped": true },
+    { "id": "srd52:longsword", "equipped": true }
   ],
   "spells": { "known": [], "prepared": [] },
   "customContent": {},

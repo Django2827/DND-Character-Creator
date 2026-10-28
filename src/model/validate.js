@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { SCHEMA_VERSION } from './character'
+import { SCHEMA_VERSION, newCharacter, emptyDetails, emptyState } from './character'
 
 const CharacterSchema = z
   .object({
@@ -12,9 +12,18 @@ const CharacterSchema = z
   })
   .passthrough()
 
-// add an entry each time the schema changes: version N → N+1
+// one entry per schema change: version N -> N+1
 const migrations = {
-  // 1: (c) => ({ ...c, schemaVersion: 2, someNewField: [] }),
+  // v1 -> v2: subspecies, details, content snapshot, richer play state
+  1: (c) => ({
+    ...newCharacter(c.ruleset),
+    ...c,
+    schemaVersion: 2,
+    subspecies: c.subspecies ?? null,
+    details: { ...emptyDetails(), ...c.details },
+    content: c.content ?? c.customContent ?? {},
+    state: { ...emptyState(), ...c.state },
+  }),
 }
 
 export function parseCharacter(json) {

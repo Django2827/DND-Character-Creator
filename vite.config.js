@@ -7,4 +7,5 @@ export default defineConfig({
   optimizeDeps: {
     entries: ['index.html', 'viewer.html'],
   },
+  build: { chunkSizeWarningLimit: 2000 },
 })

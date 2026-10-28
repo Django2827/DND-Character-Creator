@@ -9,7 +9,7 @@ const key = (c) => `dnd-sheet-state:${c.id}`
 
 function loadState(c) {
   try {
-    return JSON.parse(localStorage.getItem(key(c))) ?? c.state
+    return { ...c.state, ...JSON.parse(localStorage.getItem(key(c))) }
   } catch {
     return c.state
   }
@@ -26,12 +26,11 @@ function saveState(c, state) {
 export default function Viewer({ initial }) {
   const [character, setCharacter] = useState(() => ({ ...initial, state: loadState(initial) }))
 
-  const stats = useMemo(() => {
+  // the exported file carries every entry it needs, so no rules data is bundled here
+  const { stats, compendium } = useMemo(() => {
     const ruleset = getRuleset(character.ruleset)
-    const compendium = buildCompendium(ruleset, [
-      { ruleset: null, content: character.customContent ?? {} },
-    ])
-    return derive(character, ruleset, compendium)
+    const compendium = buildCompendium([{ content: character.content ?? {} }], character.ruleset)
+    return { compendium, stats: derive(character, ruleset, compendium) }
   }, [character])
 
   function onStateChange(patch) {
@@ -42,14 +41,16 @@ export default function Viewer({ initial }) {
 
   return (
     <>
-      <Sheet character={character} stats={stats} onStateChange={onStateChange} />
-      <button
-        onClick={() =>
-          downloadFile(`${safeName(character.name)}.json`, JSON.stringify(character, null, 2))
-        }
-      >
-        Download updated JSON
-      </button>
+      <Sheet character={character} stats={stats} compendium={compendium} onStateChange={onStateChange} />
+      <p style={{ textAlign: 'center' }}>
+        <button
+          onClick={() =>
+            downloadFile(`${safeName(character.name)}.json`, JSON.stringify(character, null, 2))
+          }
+        >
+          Download updated JSON
+        </button>
+      </p>
     </>
   )
 }

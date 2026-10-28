@@ -4,7 +4,7 @@ import { z } from 'zod'
 const PackSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   name: z.string(),
-  source: z.string().optional(),                 // book or origin, shown in the UI
+  source: z.string().optional(), // book or origin, shown in the UI
   ruleset: z.enum(['2014', '2024']).nullable().optional(),
   content: z.record(z.string(), z.record(z.string(), z.any())),
 })

@@ -1,13 +1,16 @@
 import { downloadFile, safeName } from '../lib/download'
 import { parseCharacter } from '../model/validate'
-import { snapshotCustomContent } from './snapshot'
+import { snapshotContent } from './snapshot'
 
-export function exportJson(character, ruleset, compendium) {
-  const payload = {
-    ...character,
-    customContent: snapshotCustomContent(character, ruleset, compendium),
-  }
-  downloadFile(`${safeName(character.name)}.json`, JSON.stringify(payload, null, 2))
+export function characterPayload(character, compendium) {
+  return { ...character, content: snapshotContent(character, compendium) }
+}
+
+export function exportJson(character, compendium) {
+  downloadFile(
+    `${safeName(character.name)}.json`,
+    JSON.stringify(characterPayload(character, compendium), null, 2)
+  )
 }
 
 export async function importCharacter(file) {

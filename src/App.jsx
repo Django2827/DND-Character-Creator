@@ -26,7 +26,8 @@ function App() {
 
   return (
     <>
-      <header>
+      <header className="app__header">
+        <h1>Character Creator</h1>
         <label>
           Import content pack: <input type="file" accept=".json" onChange={onPackFile} />
         </label>
@@ -34,8 +35,12 @@ function App() {
 
       <Builder />
 
-      <footer>
-        {/* paste the exact attribution text from the SRD preamble here */}
+      <footer className="app__footer">
+        This work includes material from the System Reference Document 5.1 and the System
+        Reference Document 5.2 by Wizards of the Coast LLC, which are licensed under the
+        Creative Commons Attribution 4.0 International License
+        (https://creativecommons.org/licenses/by/4.0/legalcode). SRD data via the 5e-bits
+        5e-database project.
       </footer>
     </>
   )
