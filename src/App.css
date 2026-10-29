@@ -101,3 +101,8 @@
   gap: 8px;
   margin-top: 12px;
 }
+
+.app__header nav button[aria-current='step'] {
+  background: #6b1414;
+  color: #fff;
+}

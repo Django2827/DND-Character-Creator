@@ -8,9 +8,8 @@ export default function SpeciesStep() {
   const { character, compendium } = useRules()
   const update = useCharacter((s) => s.update)
   const species = compendium.species?.[character.species]
-  const subs = (species?.subspecies ?? [])
-    .map((id) => [id, compendium.subspecies?.[id]])
-    .filter(([, s]) => s)
+  // scan by parent so homebrew lineages show up under the built-in species too
+  const subs = Object.entries(compendium.subspecies ?? {}).filter(([, s]) => s.parent === character.species)
   const sub = compendium.subspecies?.[character.subspecies]
   const is2014 = character.ruleset === '2014'
 

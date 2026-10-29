@@ -1,7 +1,7 @@
 import { get, set } from 'idb-keyval'
 import { z } from 'zod'
 
-const PackSchema = z.object({
+export const PackSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   name: z.string(),
   source: z.string().optional(), // book or origin, shown in the UI

@@ -8,7 +8,8 @@ export default function ClassStep() {
   const update = useCharacter((s) => s.update)
   const c = character.classes[0]
   const cls = compendium.classes?.[c.id]
-  const subs = (cls?.subclasses ?? []).map((id) => [id, compendium.subclasses?.[id]]).filter(([, s]) => s)
+  // scan by parent so homebrew subclasses show up under the built-in classes too
+  const subs = Object.entries(compendium.subclasses ?? {}).filter(([, s]) => s.class === c.id)
   const setClass = (patch) => update({ classes: [{ ...c, ...patch }] })
 
   return (
