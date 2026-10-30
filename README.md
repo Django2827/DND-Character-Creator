@@ -665,4 +665,6 @@ This work includes material from the System Reference Document 5.2 ("SRD 5.2") b
 
 The SRD data in `src/rules/*/data.json` was converted from the 5e-bits [5e-database](https://github.com/5e-bits/5e-database) project.
 
+Dragon icon: “Spiked Dragon Head” by Delapouite, from game-icons.net, licensed under CC BY 3.0.
+
 The application code in this repository is licensed under the terms in the `LICENSE` file.
