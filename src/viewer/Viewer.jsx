@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getRuleset } from '../rules'
 import { buildCompendium } from '../rules/compendium'
 import { derive } from '../model/derive'
@@ -25,7 +25,11 @@ function saveState(c, state) {
 
 export default function Viewer({ initial }) {
   const [character, setCharacter] = useState(() => ({ ...initial, state: loadState(initial) }))
-
+    
+  useEffect(() => {
+    document.title = character.name || 'Character Sheet'
+  }, [character.name])
+  
   // the exported file carries every entry it needs, so no rules data is bundled here
   const { stats, compendium } = useMemo(() => {
     const ruleset = getRuleset(character.ruleset)
