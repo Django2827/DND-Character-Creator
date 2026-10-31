@@ -23,6 +23,31 @@ const EDITIONS = {
   2024: { ns: 'srd52', label: 'SRD 5.2' },
 }
 
+const SUBCLASS_SPELLS_2014 = {
+  'srd51:life': {
+    1: ['srd51:bless', 'srd51:cure-wounds'],
+    3: ['srd51:lesser-restoration', 'srd51:spiritual-weapon'],
+    5: ['srd51:beacon-of-hope', 'srd51:revivify'],
+    7: ['srd51:death-ward', 'srd51:guardian-of-faith'],
+    9: ['srd51:mass-cure-wounds', 'srd51:raise-dead'],
+  },
+  'srd51:fiend': {
+    1: ['srd51:burning-hands', 'srd51:command'],
+    3: ['srd51:blindness-deafness', 'srd51:scorching-ray'],
+    5: ['srd51:fireball', 'srd51:stinking-cloud'],
+    7: ['srd51:fire-shield', 'srd51:wall-of-fire'],
+    9: ['srd51:flame-strike', 'srd51:hallow'],
+  },
+  'srd51:devotion': {
+    3: ['srd51:protection-from-evil-and-good', 'srd51:sanctuary'],
+    5: ['srd51:lesser-restoration', 'srd51:zone-of-truth'],
+    9: ['srd51:beacon-of-hope', 'srd51:dispel-magic'],
+    13: ['srd51:freedom-of-movement', 'srd51:guardian-of-faith'],
+    17: ['srd51:commune', 'srd51:flame-strike'],
+  },
+  // Add other 2014 SRD subclasses here...
+}
+
 // Numeric effects applied by derive(), keyed by trait index (same in both editions).
 const EFFECTS = {
   'dwarven-toughness': { type: 'hpPerLevel', value: 1 },
@@ -253,12 +278,14 @@ async function build(ed) {
         featureIds.push(fid)
       }
     }
+
     data.subclasses[sid] = {
       name: s.name,
       class: id(s.class.index),
       flavor: is2014 ? s.subclass_flavor : s.summary,
       desc: text(s.desc ?? s.description),
       features: featureIds,
+      ...(SUBCLASS_SPELLS_2014[sid] ? { spells: SUBCLASS_SPELLS_2014[sid] } : {})
     }
   }
 

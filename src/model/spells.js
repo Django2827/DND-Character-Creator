@@ -1,4 +1,5 @@
 // Spell helpers: lists, what you can cast, damage dice.
+import { getSubclassSpells } from '../model/derive.js';
 
 export function spellsForClass(compendium, classId) {
   return Object.entries(compendium.spells ?? {})
@@ -27,7 +28,7 @@ export function castableSpells(character, stats, compendium) {
 function scaled(base, fromLevel, slotLevel, higherLevel) {
   const inc = /(\d+)d(\d+)\s+for each/i.exec(higherLevel ?? '')
   const m = /^(\d+)d(\d+)$/.exec(base)
-  if (!inc || !m || inc[2] !== m[2] || slotLevel <= fromLevel) return base
+  if (inc?.[2] !== m?.[2] || !inc || !m || slotLevel <= fromLevel) return base
   return `${Number(m[1]) + Number(inc[1]) * (slotLevel - fromLevel)}d${m[2]}`
 }
 
@@ -55,6 +56,11 @@ export function spellDamageDice(spell, slotLevel, charLevel) {
     return scaled(base, key, slotLevel, spell.higherLevel)
   }
   return null
+}
+
+export function isSpellAlwaysPrepared(spellId, character, compendium) {
+  const subclassSpells = getSubclassSpells(character, compendium);
+  return subclassSpells.includes(spellId);
 }
 
 export const hasSpellAttack = (spell) => /spell attack/i.test(spell?.desc ?? '')

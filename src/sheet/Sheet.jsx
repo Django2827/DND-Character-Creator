@@ -30,7 +30,7 @@ export default function Sheet({ character, stats, compendium, onStateChange }) {
     if (typeof r === 'string') return push(r)
     if (r.d20) {
       const { total, rolls } = rollD20(mode)
-      push(`${r.label}: ${rolls.join(' / ')} ${fmt(r.bonus)} = ${total + r.bonus}`)
+      push(`${r.label}: ${rolls.join(' / ')}${fmt(r.bonus)} = ${total + r.bonus}`)
     } else if (r.expr) {
       const res = rollExpr(r.expr)
       if (res) push(`${r.label}: [${res.rolls.join('+')}]${res.mod ? fmt(res.mod) : ''} = ${res.total}`)
@@ -48,6 +48,8 @@ export default function Sheet({ character, stats, compendium, onStateChange }) {
     .join(' / ')
   const species = compendium.species?.[character.species]
   const sub = compendium.subspecies?.[character.subspecies]
+  const speciesName = species?.name ?? '—'
+  const speciesLabel = sub ? `${speciesName} (${sub.name})` : speciesName
   const background = compendium.backgrounds?.[character.background]
   const d = character.details ?? {}
 
@@ -62,7 +64,7 @@ export default function Sheet({ character, stats, compendium, onStateChange }) {
         <dl className="sheet__meta">
           <div><dt>Class &amp; Level</dt><dd>{classes || '—'}</dd></div>
           <div><dt>Background</dt><dd>{background?.name ?? '—'}</dd></div>
-          <div><dt>Species</dt><dd>{species ? `${species.name}${sub ? ` (${sub.name})` : ''}` : '—'}</dd></div>
+          <div><dt>Species</dt><dd>{speciesLabel}</dd></div>
           <div><dt>Alignment</dt><dd>{d.alignment || '—'}</dd></div>
           <div><dt>Player</dt><dd>{d.playerName || '—'}</dd></div>
         </dl>

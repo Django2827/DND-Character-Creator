@@ -3,15 +3,44 @@ import { Box, Pips, Rich } from './parts'
 import { ordinal, fmt, ABILITY_NAMES } from '../rules/shared'
 import { castableSpells, spellDamageDice, hasSpellAttack } from '../model/spells'
 import { castSpell, endConcentration, slotsLeft } from '../model/actions'
+import { getSubclassSpells } from '../model/derive'
+import { useRules } from '../state/useRules.js'
 
 export default function SpellPanel({ character, stats, compendium, onStateChange, onRoll }) {
   const sp = stats.spell
   const [choice, setChoice] = useState({}) // spellId -> chosen slot level
-  const state = character.state
+  const state = character?.state || {}
+  const rules = useRules()
 
-  const { cantrips, leveled, rituals } = castableSpells(character, stats, compendium)
+  // 1. Retrieve subclass domain / granted spells for character level
+  const domainSpellIds = getSubclassSpells(character, rules)
+  const isDomainSpell = (spellId) => domainSpellIds.includes(spellId)
+
+  // 2. Safely normalize prepared spells regardless of legacy data type (Array vs Object vs null)
+  const preparedSpellIds = Array.isArray(character?.spells)
+    ? character.spells
+    : character?.spells && typeof character.spells === 'object'
+      ? Object.keys(character.spells)
+      : []
+
+  // Combine active prepared spells and domain spells without duplicates
+  const allActiveSpellIds = Array.from(new Set([...preparedSpellIds, ...domainSpellIds]))
+
+  // 3. Inject normalized spells array so castableSpells processes both sets seamlessly
+  const characterWithNormalizedSpells = {
+    ...character,
+    spells: allActiveSpellIds,
+  }
+
+  // 4. Compute castable spells
+  const { cantrips, leveled, rituals } = castableSpells(characterWithNormalizedSpells, stats, compendium)
+
   const byLevel = {}
-  for (const id of leveled) (byLevel[compendium.spells[id].level] ??= []).push(id)
+  for (const id of leveled) {
+    const spellData = compendium?.spells?.[id] || rules?.spells?.[id]
+    const level = spellData?.level ?? 0
+    ;(byLevel[level] ??= []).push(id)
+  }
 
   const options = (spell) => {
     const out = []
@@ -20,41 +49,60 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
   }
 
   function cast(id, opts = {}) {
-    const spell = compendium.spells[id]
+    const spell = compendium?.spells?.[id] || rules?.spells?.[id]
+    if (!spell) return onRoll(`Spell definition missing for ${id}`)
+
     const next = castSpell(state, stats, spell, id, opts)
     if (!next) return onRoll(`No spell slot left for ${spell.name}`)
+    
     onStateChange(next)
-    const how = opts.ritual ? ' (ritual)' : spell.level > 0 ? ` at ${ordinal(opts.slotLevel ?? spell.level)} level` : ''
+    const how = opts.ritual
+      ? ' (ritual)'
+      : spell.level > 0
+        ? ` at ${ordinal(opts.slotLevel ?? spell.level)} level`
+        : ''
     onRoll(`Cast ${spell.name}${how}${spell.concentration ? ' - concentrating' : ''}`)
   }
 
   function damage(id, slotLevel) {
-    const spell = compendium.spells[id]
+    const spell = compendium?.spells?.[id] || rules?.spells?.[id]
+    if (!spell) return
     const dice = spellDamageDice(spell, slotLevel ?? spell.level, stats.level)
-    if (dice) onRoll({ expr: dice, label: `${spell.name} ${spell.damage.type.toLowerCase()} damage` })
+    if (dice) onRoll({ expr: dice, label: `${spell.name} ${spell.damage?.type?.toLowerCase() || ''} damage` })
   }
 
   const row = (id, { ritual = false } = {}) => {
-    const spell = compendium.spells[id]
+    // Lookup spell with a safe fallback object for missing definitions
+    const spell = compendium?.spells?.[id] || rules?.spells?.[id] || {
+      id,
+      name: id.includes(':') ? id.split(':').slice(1).join(':') : id,
+      level: 0,
+      school: 'Unknown',
+      desc: 'Spell details not found in active rules or packs.',
+      isMissing: true,
+    }
+
     const opts = spell.level > 0 && !ritual ? options(spell) : []
     const slotLevel = choice[id] && opts.includes(choice[id]) ? choice[id] : opts[0]
     const canCast = spell.level === 0 || ritual || opts.length > 0
-    const dice = spellDamageDice(spell, slotLevel ?? spell.level, stats.level)
+    const dice = spell.damage ? spellDamageDice(spell, slotLevel ?? spell.level, stats.level) : null
 
     return (
-      <li key={`${id}${ritual ? '-r' : ''}`} className="spell">
+      <li key={`${id}${ritual ? '-r' : ''}`} className={`spell ${spell.isMissing ? 'spell--missing' : ''}`}>
         <details>
           <summary>
             <span className="spell__name">{spell.name}</span>
             <span className="spell__tags">
               {spell.concentration && <abbr title="Concentration">C</abbr>}
               {spell.ritual && <abbr title="Ritual">R</abbr>}
+              {isDomainSpell(id) && <abbr className="domain-abbr" title="Domain / Subclass Spell">Domain</abbr>}
+              {spell.isMissing && <abbr className="missing-abbr" title="Missing Spell Data">?</abbr>}
               <span>{spell.school}</span>
             </span>
           </summary>
           <p className="spell__meta">
-            {spell.castingTime} · {spell.range} · {spell.components}
-            {spell.material ? ` (${spell.material})` : ''} · {spell.duration}
+            {spell.castingTime || '1 action'} · {spell.range || 'Self'} · {spell.components || 'V, S'}
+            {spell.material ? ` (${spell.material})` : ''} · {spell.duration || 'Instantaneous'}
           </p>
           <Rich text={spell.desc} />
           {spell.higherLevel && <Rich text={`**At higher levels.** ${spell.higherLevel}`} />}
@@ -73,7 +121,7 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
               ))}
             </select>
           )}
-          <button disabled={!canCast} onClick={() => cast(id, ritual ? { ritual: true } : { slotLevel })}>
+          <button disabled={!canCast || spell.isMissing} onClick={() => cast(id, ritual ? { ritual: true } : { slotLevel })}>
             {ritual ? 'Ritual' : 'Cast'}
           </button>
           {hasSpellAttack(spell) && (
@@ -87,13 +135,15 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
     )
   }
 
-  const concentrating = state.concentration ? compendium.spells?.[state.concentration] : null
+  const concentrating = state.concentration
+    ? compendium?.spells?.[state.concentration] || rules?.spells?.[state.concentration]
+    : null
 
   return (
     <Box className="spellpanel" title="Spellcasting">
       <div className="spellpanel__head">
         <div>
-          <strong>{ABILITY_NAMES[sp.ability]}</strong>
+          <strong>{ABILITY_NAMES[sp.ability] || 'INT'}</strong>
           <small>Spellcasting ability</small>
         </div>
         <div>
@@ -122,7 +172,7 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
                 total={total}
                 used={state.spellSlotsUsed?.[i + 1] ?? 0}
                 label={`${ordinal(i + 1)} level slot`}
-                onChange={(n) => onStateChange({ spellSlotsUsed: { ...state.spellSlotsUsed, [i + 1]: n } })}
+                onChange={(n) => onStateChange({ ...state, spellSlotsUsed: { ...state.spellSlotsUsed, [i + 1]: n } })}
               />
             </div>
           ) : null

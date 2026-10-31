@@ -14,10 +14,10 @@ export function rollD20(mode = 'normal') {
 // "2d6+3", "1d8", "8d6", and flat values like "1" or "1+3" -> { total, rolls, mod }
 // (null if it isn't a dice expression)
 export function rollExpr(expr) {
-  const m = /^\s*(\d+)(?:d(\d+))?\s*([+-]\s*\d+)?\s*$/.exec(expr ?? '')
+  const m = /^(\d+)(?:d(\d+))?([+-]\s*\d+)?$/.exec(String(expr ?? '').trim())
   if (!m) return null
   const mod = m[3] ? Number(m[3].replace(/\s/g, '')) : 0
-  if (!m[2]) return { rolls: [], mod, total: Number(m[1]) + mod } // flat damage, e.g. a blowgun
+  if (!m[2]) return { rolls: [Number(m[1])], mod, total: Number(m[1]) + mod } // flat damage, e.g. a blowgun
   const { rolls, total } = roll(Number(m[2]), Number(m[1]))
   return { rolls, mod, total: total + mod }
 }

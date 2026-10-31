@@ -128,6 +128,21 @@ function buildAttacks(character, mods, prof, classProfs, compendium) {
   }
   return attacks
 }
+  export function getSubclassSpells(character, compendium) {
+    if (!character.subclass) return [];
+    const subclass = compendium.subclasses?.[character.subclass];
+    if (!subclass?.spells) return [];
+
+    const charLevel = character.level || 1;
+    const granted = [];
+
+    for (const [reqLevel, spellIds] of Object.entries(subclass.spells)) {
+      if (charLevel >= Number(reqLevel)) {
+        granted.push(...spellIds);
+      }
+    }
+    return granted;
+  }
 
 function spellInfo(character, cls, ruleset, mods, prof) {
   const sc = cls?.spellcasting
