@@ -12,32 +12,50 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
   const state = character?.state || {}
   const rules = useRules()
 
+  // Helper to resolve spell objects across compendium, embedded character content, and base rules
+  const getSpellDef = (id) =>
+    compendium?.spells?.[id] ||
+    character?.content?.spells?.[id] ||
+    rules?.spells?.[id]
+
   // 1. Retrieve subclass domain / granted spells for character level
-  const domainSpellIds = getSubclassSpells(character, rules)
+  const domainSpellIds = getSubclassSpells(character, rules, compendium)
   const isDomainSpell = (spellId) => domainSpellIds.includes(spellId)
 
-  // 2. Safely normalize prepared spells regardless of legacy data type (Array vs Object vs null)
-  const preparedSpellIds = Array.isArray(character?.spells)
-    ? character.spells
-    : character?.spells && typeof character.spells === 'object'
-      ? Object.keys(character.spells)
-      : []
+  // 2. Safely extract raw known and prepared spell lists
+  const rawKnown = Array.isArray(character?.spells) 
+    ? character.spells 
+    : (character?.spells?.known || [])
+    
+  const rawPrepared = Array.isArray(character?.spells) 
+    ? character.spells 
+    : (character?.spells?.prepared || [])
 
-  // Combine active prepared spells and domain spells without duplicates
-  const allActiveSpellIds = Array.from(new Set([...preparedSpellIds, ...domainSpellIds]))
-
-  // 3. Inject normalized spells array so castableSpells processes both sets seamlessly
+  // 3. Construct the normalized spells object that castableSpells expects, including domain spells
   const characterWithNormalizedSpells = {
     ...character,
-    spells: allActiveSpellIds,
+    spells: {
+      known: Array.from(new Set([...rawKnown, ...domainSpellIds])),
+      prepared: Array.from(new Set([...rawPrepared, ...domainSpellIds])),
+    },
+  }
+
+  // Merged compendium object containing embedded character spells for model function helpers
+  const effectiveCompendium = {
+    ...compendium,
+    spells: {
+      ...rules?.spells,
+      ...character?.content?.spells,
+      ...compendium?.spells,
+    }
   }
 
   // 4. Compute castable spells
-  const { cantrips, leveled, rituals } = castableSpells(characterWithNormalizedSpells, stats, compendium)
+  const { cantrips, leveled, rituals } = castableSpells(characterWithNormalizedSpells, stats, effectiveCompendium)
 
   const byLevel = {}
   for (const id of leveled) {
-    const spellData = compendium?.spells?.[id] || rules?.spells?.[id]
+    const spellData = getSpellDef(id)
     const level = spellData?.level ?? 0
     ;(byLevel[level] ??= []).push(id)
   }
@@ -49,7 +67,7 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
   }
 
   function cast(id, opts = {}) {
-    const spell = compendium?.spells?.[id] || rules?.spells?.[id]
+    const spell = getSpellDef(id)
     if (!spell) return onRoll(`Spell definition missing for ${id}`)
 
     const next = castSpell(state, stats, spell, id, opts)
@@ -65,15 +83,15 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
   }
 
   function damage(id, slotLevel) {
-    const spell = compendium?.spells?.[id] || rules?.spells?.[id]
+    const spell = getSpellDef(id)
     if (!spell) return
     const dice = spellDamageDice(spell, slotLevel ?? spell.level, stats.level)
     if (dice) onRoll({ expr: dice, label: `${spell.name} ${spell.damage?.type?.toLowerCase() || ''} damage` })
   }
 
   const row = (id, { ritual = false } = {}) => {
-    // Lookup spell with a safe fallback object for missing definitions
-    const spell = compendium?.spells?.[id] || rules?.spells?.[id] || {
+    // Lookup spell including character.content.spells with a fallback for missing data
+    const spell = getSpellDef(id) || {
       id,
       name: id.includes(':') ? id.split(':').slice(1).join(':') : id,
       level: 0,
@@ -135,9 +153,7 @@ export default function SpellPanel({ character, stats, compendium, onStateChange
     )
   }
 
-  const concentrating = state.concentration
-    ? compendium?.spells?.[state.concentration] || rules?.spells?.[state.concentration]
-    : null
+  const concentrating = state.concentration ? getSpellDef(state.concentration) : null
 
   return (
     <Box className="spellpanel" title="Spellcasting">

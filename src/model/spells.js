@@ -1,6 +1,11 @@
 // Spell helpers: lists, what you can cast, damage dice.
 import { getSubclassSpells } from '../model/derive.js';
 
+// Safe lookup that checks both the global compendium and the character's embedded content
+function getSpellDef(compendium, character, id) {
+  return compendium?.spells?.[id] || character?.content?.spells?.[id];
+}
+
 export function spellsForClass(compendium, classId) {
   return Object.entries(compendium.spells ?? {})
     .filter(([, s]) => s.classes?.includes(classId))
@@ -10,7 +15,7 @@ export function spellsForClass(compendium, classId) {
 // Which spells can be cast right now? Cantrips are always available; leveled spells
 // come from "known" (known-casters) or "prepared" (everyone else).
 export function castableSpells(character, stats, compendium) {
-  const level = (id) => compendium.spells?.[id]?.level ?? -1
+  const level = (id) => getSpellDef(compendium, character, id)?.level ?? -1
   const known = character.spells?.known ?? []
   const prepared = character.spells?.prepared ?? []
   const leveledSource = stats.spell?.mode === 'known' && !stats.spell?.spellbook ? known : prepared
@@ -19,7 +24,7 @@ export function castableSpells(character, stats, compendium) {
     leveled: leveledSource.filter((id) => level(id) > 0),
     // ritual spells in a spellbook can be cast as rituals without being prepared
     rituals: stats.spell?.spellbook
-      ? known.filter((id) => level(id) > 0 && compendium.spells?.[id]?.ritual)
+      ? known.filter((id) => level(id) > 0 && getSpellDef(compendium, character, id)?.ritual)
       : [],
   }
 }

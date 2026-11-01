@@ -128,21 +128,39 @@ function buildAttacks(character, mods, prof, classProfs, compendium) {
   }
   return attacks
 }
-  export function getSubclassSpells(character, compendium) {
-    if (!character.subclass) return [];
-    const subclass = compendium.subclasses?.[character.subclass];
-    if (!subclass?.spells) return [];
+// In model/derive.js
 
-    const charLevel = character.level || 1;
-    const granted = [];
+// In model/derive.js
 
-    for (const [reqLevel, spellIds] of Object.entries(subclass.spells)) {
-      if (charLevel >= Number(reqLevel)) {
-        granted.push(...spellIds);
+export function getSubclassSpells(character, rules, compendium) {
+  const subclassSpells = []
+
+  // Iterate through all classes on the character (e.g. Cleric level 5)
+  for (const cls of character?.classes || []) {
+    const subclassId = cls.subclass
+    const classLevel = cls.level || 1
+
+    // Look for the subclass definition across character content, compendium packs, and base rules
+    const subclassDef =
+      character?.content?.subclasses?.[subclassId] ||
+      compendium?.subclasses?.[subclassId] ||
+      rules?.subclasses?.[subclassId]
+
+    if (subclassDef?.spells) {
+      // Iterate through the level keys ("1", "3", "5", "7", "9") in your pack
+      for (const [reqLevelStr, spellsList] of Object.entries(subclassDef.spells)) {
+        const reqLevel = Number(reqLevelStr)
+        
+        // If the character's class level meets or exceeds the required level, add the spells
+        if (classLevel >= reqLevel && Array.isArray(spellsList)) {
+          subclassSpells.push(...spellsList)
+        }
       }
     }
-    return granted;
   }
+
+  return Array.from(new Set(subclassSpells))
+}
 
 function spellInfo(character, cls, ruleset, mods, prof) {
   const sc = cls?.spellcasting
