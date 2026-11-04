@@ -10,12 +10,23 @@ export default function SpellsStep() {
   const update = useCharacter((s) => s.update)
   const [query, setQuery] = useState('')
   const [levelFilter, setLevelFilter] = useState('all')
+  const [classFilter, setClassFilter] = useState('all')
+
+  const isEldritchKnight = character.classes[0]?.subclass == "hb:edlritch-knight"
+  const isArcaneTrickster = character.classes[0]?.subclass == "hb:arcane-trickster"
+  const hasSpellcastingSub = isEldritchKnight || isArcaneTrickster
+
+  const hasMagicInitiate = character.feats?.includes('hb:magic-initiate')
+  const hasRitualCaster = character.feats?.includes('hb:ritual-caster')
+  const hasSpellcastingFeat = hasMagicInitiate || hasRitualCaster
+  console.log("Current character state:", character);
+  console.log("Current character state:", compendium);
 
   const sp = stats.spell
   const classId = character.classes[0]?.id
   const cls = compendium.classes?.[classId]
 
-  if (!sp) {
+  if (!sp && !hasSpellcastingFeat) {
     const start = cls?.spellcasting?.startLevel
     return (
       <>
@@ -45,20 +56,24 @@ export default function SpellsStep() {
     if (key === 'known' && !on) next.prepared = next.prepared.filter((p) => p !== id)
     update({ spells: next })
   }
+  const magicInitiateBonus = (hasMagicInitiate) ? 1 : 0
+  const ritualCasterBonus = (hasRitualCaster) ? 2 : 0
+  const magicInitiateBonusCan = (hasMagicInitiate) ? 2 : 0
 
   const hasKnownColumn = sp.mode === 'known' || sp.spellbook
   const hasPreparedColumn = sp.mode === 'prepared'
   const counters = [
-    { label: 'Cantrips', n: count(known, (l) => l === 0), max: sp.cantripsMax },
+    { label: 'Cantrips', n: count(known, (l) => l === 0), max: (sp.cantripsMax + magicInitiateBonusCan) },
     sp.mode === 'known' && !sp.spellbook
-      ? { label: 'Spells known', n: count(known, (l) => l > 0), max: sp.limit }
-      : { label: 'Spells prepared', n: count(prepared, (l) => l > 0), max: sp.limit },
+      ? { label: 'Spells known', n: count(known, (l) => l > 0), max: (sp.limit + magicInitiateBonus + ritualCasterBonus)}
+      : { label: 'Spells prepared', n: count(prepared, (l) => l > 0), max: (sp.limit + magicInitiateBonus + ritualCasterBonus)},
     sp.spellbook ? { label: 'In spellbook', n: count(known, (l) => l > 0), max: null } : null,
   ].filter(Boolean)
 
-  const rows = spellsForClass(compendium, classId)
+  const rows = spellsForClass(compendium, classId, hasSpellcastingFeat, hasSpellcastingSub)
     .filter(([, s]) => s.level <= sp.maxSlotLevel)
     .filter(([, s]) => levelFilter === 'all' || s.level === Number(levelFilter))
+    .filter(([, s]) => classFilter === 'all' || s.classes?.includes(classFilter))
     .filter(([, s]) => s.name.toLowerCase().includes(query.toLowerCase()))
 
   return (
@@ -77,7 +92,7 @@ export default function SpellsStep() {
           : sp.mode === 'known'
             ? 'You know a fixed number of spells and can cast any of them.'
             : 'You prepare spells from your whole class list.'}
-        {' '}Spell slots come from your class level ({sp.slots.length ? 'see the sheet' : 'none yet'}).
+        {' '}Spell slots come from your class level ({sp.slots.length ? 'see the sheet' : 'none yet'}). If you take a feat or subclass that grants spellcasting, such as Magic Initiate, make sure you are choosing spells from the correct class and/or school. Taking Ritual Casting or Magic Initiate automatically updates the number of allowed spells.
       </p>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -88,6 +103,18 @@ export default function SpellsStep() {
             <option key={l} value={l}>{l === 0 ? 'Cantrips' : ordinal(l)}</option>
           ))}
         </select>
+        {hasSpellcastingFeat && (<select 
+          value={classFilter} 
+          onChange={(e) => setClassFilter(e.target.value)}
+          aria-label="Spellcasting Class"
+        >
+          <option value="all">All Classes</option>
+          {Object.entries(compendium.classes ?? {}).filter(([ ,cls]) => cls.spellcasting != null).map(([id, cls]) => (
+            <option key={id} value={id}>
+              {cls.name}
+            </option>
+          ))}
+        </select>)}
       </div>
 
       <div className="scroll">

@@ -23,7 +23,7 @@ export default function RulesStep() {
       <p>
         You can switch at any time. Anything that doesn&apos;t exist in the other ruleset
         gets flagged below, and the 2014 and 2024 rules handle ability bonuses differently
-        (species in 2014, background in 2024), so revisit the Abilities step after switching.
+        (species in 2014, background in 2024), so revisit the Abilities step after switching.  
       </p>
       {problems.length > 0 && (
         <ul className="warn">{problems.map((p) => <li key={p}>{p}</li>)}</ul>

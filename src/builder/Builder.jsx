@@ -15,7 +15,7 @@ const STEPS = [
   { id: 'species', label: 'Species', Component: SpeciesStep },
   { id: 'class', label: 'Class', Component: ClassStep },
   { id: 'background', label: 'Background', Component: BackgroundStep },
-  { id: 'abilities', label: 'Abilities', Component: AbilitiesStep },
+  { id: 'abilities', label: 'Abilities & Feats', Component: AbilitiesStep },
   { id: 'skills', label: 'Skills', Component: SkillsStep },
   { id: 'equipment', label: 'Equipment', Component: EquipmentStep },
   { id: 'spells', label: 'Spells', Component: SpellsStep },

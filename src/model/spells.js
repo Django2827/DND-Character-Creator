@@ -6,10 +6,17 @@ function getSpellDef(compendium, character, id) {
   return compendium?.spells?.[id] || character?.content?.spells?.[id];
 }
 
-export function spellsForClass(compendium, classId) {
-  return Object.entries(compendium.spells ?? {})
+export function spellsForClass(compendium, classId, hasSpellFeat = false, hasSubSpells = false) {
+
+  if (hasSpellFeat || hasSubSpells){
+    return Object.entries(compendium.spells ?? {})
+    .sort((a, b) => a[1].level - b[1].level || a[1].name.localeCompare(b[1].name))
+  } else {
+    return Object.entries(compendium.spells ?? {})
     .filter(([, s]) => s.classes?.includes(classId))
     .sort((a, b) => a[1].level - b[1].level || a[1].name.localeCompare(b[1].name))
+  }
+
 }
 
 // Which spells can be cast right now? Cantrips are always available; leveled spells

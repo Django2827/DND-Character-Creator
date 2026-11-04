@@ -1,5 +1,7 @@
 import { useCharacter } from '../../state/store'
 import { useRules } from '../../state/useRules'
+import { useEffect, useRef } from 'react';
+import './AbilitiesStep.css'
 import {
   ABILITIES,
   ABILITY_NAMES,
@@ -8,6 +10,8 @@ import {
   fmt,
   pointsSpent,
 } from '../../rules/shared'
+import Choices from 'choices.js'
+import 'choices.js/public/assets/styles/choices.css';
 
 // valid 2024 background bonus: +2/+1, or +1/+1/+1
 function originProblem(bonuses) {
@@ -39,9 +43,90 @@ export default function AbilitiesStep() {
   const choice2014 = species?.abilityBonusChoice
   const picked2014 = Object.keys(chosen).length
 
+const selectRef = useRef(null);
+  const choicesInstance = useRef(null);
+  const updateRef = useRef(update);
+  
+  // Lock flag to prevent programmatic sync loops
+  const isSyncingRef = useRef(false);
+
+  const characterFeatsRef = useRef(character.feats);
+  useEffect(() => {
+    characterFeatsRef.current = character.feats;
+  }, [character.feats]);
+
+  // 1. Initialize Choices.js ONCE when compendium feats are loaded
+  useEffect(() => {
+    const element = selectRef.current;
+    if (!element || !compendium.feats) return;
+
+    // CRITICAL: Clear any lingering DOM options to prevent duplicates
+    element.innerHTML = '';
+
+    const choicesData = Object.entries(compendium.feats).map(([id, b]) => ({
+      value: id,
+      label: b.name,
+    }));
+
+    if (choicesInstance.current) {
+      choicesInstance.current.destroy();
+    }
+
+    choicesInstance.current = new Choices(element, {
+      removeItemButton: true,
+      searchEnabled: true,
+      choices: choicesData,
+    });
+
+    if (characterFeatsRef.current?.length) {
+      isSyncingRef.current = true;
+      choicesInstance.current.setChoiceByValue(characterFeatsRef.current);
+      isSyncingRef.current = false;
+    }
+
+    const handleChange = () => {
+      // If we are currently syncing programmatically, ignore this event
+      if (isSyncingRef.current) return;
+
+      const selectedValues = choicesInstance.current.getValue(true);
+      updateRef.current({ feats: selectedValues.length ? selectedValues : null });
+    };
+
+    element.addEventListener('change', handleChange);
+
+    return () => {
+      element.removeEventListener('change', handleChange);
+      choicesInstance.current?.destroy();
+      choicesInstance.current = null;
+    };
+  }, [compendium.feats]); 
+
+  // 2. Sync external character feat changes safely with the lock enabled
+  useEffect(() => {
+    const choices = choicesInstance.current;
+    if (!choices) return;
+
+    const currentSelected = choices.getValue(true);
+    const targetFeats = character.feats ?? [];
+
+    const isDifferent = 
+      currentSelected.length !== targetFeats.length ||
+      !targetFeats.every((v) => currentSelected.includes(v));
+
+    if (isDifferent) {
+      isSyncingRef.current = true; // Lock events while updating programmatically
+      if (targetFeats.length) {
+        choices.setChoiceByValue(targetFeats);
+      } else {
+        choices.removeActiveItems();
+      }
+      isSyncingRef.current = false; // Unlock
+    }
+  }, [character.feats]);
+
   return (
     <>
-      <h2>Ability scores</h2>
+      <h2>Ability Scores & Feats</h2>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={() => update({ abilityScores: Object.fromEntries(ABILITIES.map((a) => [a, 8])) })}>
           Point buy (reset to 8s)
@@ -85,6 +170,10 @@ export default function AbilitiesStep() {
           ))}
         </tbody>
       </table>
+      <label>
+        <span className="feat-header">Feat(s) - Any time your Class would grant you an Ability Score Improvement, you may instead gain a feat that you meet the requirements for.</span>
+        <select multiple={true} ref={selectRef} />
+      </label>
 
       {is2024 && bg?.abilityOptions && (
         <>

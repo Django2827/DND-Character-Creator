@@ -1,0 +1,19 @@
+.choices__inner {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  margin-top: 6px;
+}
+
+.choices__input {
+  background-color: transparent !important;
+  flex: 1 !important;
+  min-width: 120px !important; /* Forces the input to claim breathing room so the whole box is clickable */
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.feat-header {
+    font-weight: bold;
+}
